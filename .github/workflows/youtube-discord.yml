@@ -1,0 +1,51 @@
+name: YouTube to Discord
+
+on:
+  schedule:
+    # 1時間おき。GitHub ActionsのcronはUTC基準。
+    # 17分にしているのは、毎時00分の混雑を避けるため。
+    - cron: "17 * * * *"
+
+  workflow_dispatch:
+    inputs:
+      first_run_notify:
+        description: "Notify latest video even if state is empty"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check YouTube and notify Discord
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          CHANNEL_ID: UCIuOtzuhF4T-v5irBl1SxcA
+          FIRST_RUN_NOTIFY: ${{ github.event.inputs.first_run_notify || 'false' }}
+        run: node notify.js
+
+      - name: Commit state if changed
+        run: |
+          if git diff --quiet state.json; then
+            echo "No state changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state.json
+            git commit -m "Update YouTube notify state"
+            git push
+          fi
