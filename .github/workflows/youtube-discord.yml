@@ -4,7 +4,7 @@ on:
   schedule:
     # 1時間おき。GitHub ActionsのcronはUTC基準。
     # 17分にしているのは、毎時00分の混雑を避けるため。
-    - cron: "17 * * * *"
+    - cron: "7,22,37,52 * * * *"
 
   workflow_dispatch:
     inputs:
