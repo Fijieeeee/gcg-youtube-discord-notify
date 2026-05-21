@@ -1,11 +1,6 @@
 name: YouTube to Discord
 
 on:
-  schedule:
-    # 1時間おき。GitHub ActionsのcronはUTC基準。
-    # 17分にしているのは、毎時00分の混雑を避けるため。
-    - cron: "7,22,37,52 * * * *"
-
   workflow_dispatch:
     inputs:
       first_run_notify:
@@ -13,6 +8,10 @@ on:
         required: false
         type: boolean
         default: false
+
+concurrency:
+  group: youtube-discord-notify
+  cancel-in-progress: false
 
 permissions:
   contents: write
